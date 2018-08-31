@@ -10,7 +10,7 @@ require "./secrets/*"
 module Secrets
   extend self
 
-  def gets(prompt = "", hint = "*", empty_error : String? = nil, retry : Int32? = nil)
+  def gets(prompt = "", hint = "*", empty_error : String? = nil, retry : Int32? = nil, forbidden : Array(Char)? = nil, forbidden_error : String? = nil)
     print prompt
     input = [] of String
     i = 0
@@ -37,6 +37,24 @@ module Secrets
           end
           sleep 1
           print prompt
+        elsif forbidden && !forbidden.empty?
+            forbidden.each do |c|
+              if input.include? c
+                puts
+                if retry || forbidden_error
+                  if retry
+                    break if i >= retry
+                  end
+                  if forbidden_error
+                    puts forbidden_error unless forbidden_error.empty?
+                  end
+                end
+                sleep 1
+                print prompt
+              else
+                break
+              end
+            end
         else
           break
         end
